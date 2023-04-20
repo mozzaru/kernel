@@ -59,6 +59,7 @@ API_BOT="6130238052:AAFDEWKYtsPPEt2xGHUHigpy6J4goGzqwC0"
 DEVICE="Redmi 4 Prime"
 CODENAME="markw"
 KERNEL_NAME="Prototype"
+KERNEL_CODE="OC"
 
 DEFCONFIG="markw_defconfig"
 
@@ -208,7 +209,7 @@ KERVER=$(make kernelversion)
                 zip -r "$ZIP" *
                 curl -sLo zipsigner-3.0.jar https://raw.githubusercontent.com/mozzaru/AnyKernel/master/zipsigner-3.0.jar
                 java -jar zipsigner-3.0.jar "$ZIP".zip "$ZIP"-signed.zip
-                tg_post_msg "<b>=============================</b> %0A <b>× Prototype For Redmi 4 Prime ×</b> %0A <b>=============================</b> %0A%0A <b>Date : </b> <code>$(TZ=Indonesia/Jakarta date)</code> %0A%0A <b>Device Code Name:</b> <code>$CODENAME</code> %0A%0A <b>Kernel Version :</b> <code>$KERVER</code> %0A%0A <b>Changelog:</b> %0A https://github.com/mozzaru/kernel_xiaomi_markw_new/commits/Tt <b>Developer:</b> @mozzaru %0A%0A  #prototype #markw" "$CHATID"
+                tg_post_msg "<b>=============================</b> %0A <b>× Prototype For Redmi 4 Prime ×</b> %0A <b>=============================</b> %0A%0A <b>Date : </b> <code>$(TZ=Indonesia/Bandung date)</code> %0A%0A <b>Device Code Name:</b> <code>$CODENAME</code> %0A%0A <b>Kernel Version :</b> <code>$KERVER</code> %0A%0A <b>Developer:</b> @mossaru %0A%0A <b>BOT:</b> https://t.me/Kernel_masakan_bot %0A%0A <b>Changelog:</b> %0A https://github.com/mozzaru/kernel_markw/commits/normal %0A%0A <b>Download Normal version:</b> %0A https://t.me/Kernel_masakan_bot/ %0A%0A <b>Download Overclock version:</b> %0A https://t.me/Kernel_masakan_bo/ #prototype #markw" "$CHATID"
                 tg_post_build "$ZIP"-signed.zip "$CHATID"
                 cd ..
                 rm -rf error.log
