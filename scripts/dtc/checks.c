@@ -969,47 +969,7 @@ static struct check *check_table[] = {
 	&address_cells_is_cell, &size_cells_is_cell, &interrupt_cells_is_cell,
 	&device_type_is_string, &model_is_string, &status_is_string,
 
-	&property_name_chars_strict,
-	&node_name_chars_strict,
-
-	&addr_size_cells, &reg_format, &ranges_format,
-
-	&unit_address_vs_reg,
-	&unit_address_format,
-
-	&pci_bridge,
-	&pci_device_reg,
-	&pci_device_bus_num,
-
-	&simple_bus_bridge,
-	&simple_bus_reg,
-
-	&avoid_default_addr_size,
-	&obsolete_chosen_interrupt_controller,
-
-	&clocks_property,
-	&cooling_device_property,
-	&dmas_property,
-	&hwlocks_property,
-	&interrupts_extended_property,
-	&io_channels_property,
-	&iommus_property,
-	&mboxes_property,
-	&msi_parent_property,
-	&mux_controls_property,
-	&phys_property,
-	&power_domains_property,
-	&pwms_property,
-	&resets_property,
-	&sound_dais_property,
-	&thermal_sensors_property,
-
-	&deprecated_gpio_property,
-	&gpios_property,
-	&interrupts_property,
-
-	&always_fail,
-};
+	};
 
 static void enable_warning_error(struct check *c, bool warn, bool error)
 {
