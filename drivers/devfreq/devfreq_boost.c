@@ -10,8 +10,6 @@
 #include <linux/input.h>
 #include <linux/kthread.h>
 
-extern int kp_active_mode(void);
-
 enum {
 	SCREEN_OFF,
 	INPUT_BOOST,
@@ -53,14 +51,22 @@ static struct df_boost_drv df_boost_drv_g __read_mostly = {
 		       CONFIG_DEVFREQ_MSM_CPUBW_BOOST_FREQ)
 };
 
+extern int kp_active_mode(void);
+
 static void __devfreq_boost_kick(struct boost_dev *b)
 {
+	unsigned int period;
+
 	if (!READ_ONCE(b->df) || test_bit(SCREEN_OFF, &b->state) || kp_active_mode() == 1)
 		return;
 
+	period = (kp_active_mode() == 2) ? (CONFIG_DEVFREQ_INPUT_BOOST_DURATION_MS * 1.5) :
+		 (kp_active_mode() == 3) ? (CONFIG_DEVFREQ_INPUT_BOOST_DURATION_MS * 2) :
+		 CONFIG_DEVFREQ_INPUT_BOOST_DURATION_MS;
+
 	set_bit(INPUT_BOOST, &b->state);
 	if (!mod_delayed_work(system_unbound_wq, &b->input_unboost,
-		msecs_to_jiffies(CONFIG_DEVFREQ_INPUT_BOOST_DURATION_MS)))
+		msecs_to_jiffies(period)))
 		wake_up(&b->boost_waitq);
 }
 

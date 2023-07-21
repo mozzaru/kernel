@@ -10,10 +10,6 @@
  * GNU General Public License for more details.
  */
 
-/*
- * IPC ROUTER GLINK XPRT module.
- */
-
 #include <linux/module.h>
 #include <linux/platform_device.h>
 #include <linux/types.h>

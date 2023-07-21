@@ -815,7 +815,7 @@ exit:
 	cluster_unprepare(cpu->parent, cpumask, idx, true, end_time, success);
 	cpu_unprepare(cpu, idx, true);
 	dev->last_residency = ktime_us_delta(ktime_get(), start);
-	RCU_NONIDLE(trace_cpu_idle_exit(idx, success));
+	trace_cpu_idle_exit(idx, success);
 	local_irq_enable();
 	return idx;
 }

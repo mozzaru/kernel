@@ -965,7 +965,6 @@ static void do_devfreq_notify(struct work_struct *work)
 	struct devfreq *devfreq = pwrscale->devfreqptr;
 	struct devfreq *bus_devfreq = pwrscale->bus_devfreq;
 
-
 	mutex_lock(&devfreq->lock);
 	update_devfreq(devfreq);
 	mutex_unlock(&devfreq->lock);

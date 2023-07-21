@@ -51,7 +51,7 @@
 #define PWR_ON_STEP_SLEEP 100
 #define PWR_ON_STEP_RANGE1 100
 #define PWR_ON_STEP_RANGE2 900
-#define FPC_TTW_HOLD_TIME 400
+#define FPC_TTW_HOLD_TIME 1000
 #define NUM_PARAMS_REG_ENABLE_SET 2
 
 static const char * const pctl_names[] = {
@@ -389,6 +389,7 @@ static ssize_t compatible_all_set(struct device *dev,
 			goto exit;
 		irqf = IRQF_TRIGGER_RISING | IRQF_ONESHOT;
 		if (of_property_read_bool(dev->of_node, "fpc,enable-wakeup")) {
+			irqf |= IRQF_NO_SUSPEND;
 			device_init_wakeup(dev, 1);
 		}
 		rc = devm_request_threaded_irq(dev, gpio_to_irq(fpc1020->irq_gpio),
@@ -452,7 +453,9 @@ static irqreturn_t fpc1020_irq_handler(int irq, void *handle)
 	struct fpc1020_data *fpc1020 = handle;
 	dev_dbg(fpc1020->dev, "%s\n", __func__);
 
-	__pm_wakeup_event(&fpc1020->ttw_wl, FPC_TTW_HOLD_TIME);
+	if (atomic_read(&fpc1020->wakeup_enabled)) {
+		__pm_wakeup_event(&fpc1020->ttw_wl, FPC_TTW_HOLD_TIME);
+	}
 
 	sysfs_notify(&fpc1020->dev->kobj, NULL, dev_attr_irq.attr.name);
 

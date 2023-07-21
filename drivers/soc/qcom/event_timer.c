@@ -50,7 +50,9 @@ struct hrtimer_info {
 
 static DEFINE_PER_CPU(struct hrtimer_info, per_cpu_hrtimer);
 
-static DEFINE_PER_CPU(struct timerqueue_head, timer_head);
+static DEFINE_PER_CPU(struct timerqueue_head, timer_head) = {
+	.rb_root = RB_ROOT_CACHED,
+};
 
 static DEFINE_SPINLOCK(event_timer_lock);
 static DEFINE_SPINLOCK(event_setup_lock);
@@ -498,3 +500,4 @@ ktime_t get_next_event_time(int cpu)
 
 	return next_event;
 }
+

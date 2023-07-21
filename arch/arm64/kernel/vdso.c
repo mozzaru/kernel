@@ -178,8 +178,6 @@ static int __init vdso_mappings_init(const char *name,
 	}
 
 	vdso_pages = (code_end - code_start) >> PAGE_SHIFT;
-	pr_info("%s: %ld pages (%ld code @ %p, %ld data @ %p)\n",
-		name, vdso_pages + 1, vdso_pages, code_start, 1L, vdso_data);
 
 	/* Allocate the vDSO pagelist, plus a page for the data. */
 	/*
@@ -192,6 +190,8 @@ static int __init vdso_mappings_init(const char *name,
 				      GFP_KERNEL);
 	if (vdso_pagelist == NULL)
 		return -ENOMEM;
+
+	kmemleak_not_leak(vdso_pagelist);
 
 	/* Grab the vDSO data page. */
 	vdso_pagelist[0] = phys_to_page(__pa_symbol(vdso_data));

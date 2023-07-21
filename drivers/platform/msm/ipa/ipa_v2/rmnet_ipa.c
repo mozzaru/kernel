@@ -2359,8 +2359,8 @@ static const struct of_device_id rmnet_ipa_dt_match[] = {
 MODULE_DEVICE_TABLE(of, rmnet_ipa_dt_match);
 
 static const struct dev_pm_ops rmnet_ipa_pm_ops = {
-	.suspend_noirq = rmnet_ipa_ap_suspend,
-	.resume_noirq = rmnet_ipa_ap_resume,
+	.suspend_late = rmnet_ipa_ap_suspend,
+	.resume_early = rmnet_ipa_ap_resume,
 };
 
 static struct platform_driver rmnet_ipa_driver = {
@@ -2532,7 +2532,8 @@ static void tethering_stats_poll_queue(struct work_struct *work)
 
 	/* Schedule again only if there's an active polling interval */
 	if (ipa_rmnet_ctx.polling_interval != 0)
-		schedule_delayed_work(&ipa_tether_stats_poll_wakequeue_work,
+		queue_delayed_work(system_power_efficient_wq,
+			&ipa_tether_stats_poll_wakequeue_work,
 			msecs_to_jiffies(ipa_rmnet_ctx.polling_interval*1000));
 }
 
@@ -2626,7 +2627,8 @@ int rmnet_ipa_poll_tethering_stats(struct wan_ioctl_poll_tethering_stats *data)
 		return 0;
 	}
 
-	schedule_delayed_work(&ipa_tether_stats_poll_wakequeue_work, 0);
+	queue_delayed_work(system_power_efficient_wq,
+			&ipa_tether_stats_poll_wakequeue_work, 0);
 	return 0;
 }
 

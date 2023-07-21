@@ -740,21 +740,6 @@ static unsigned int osm_cpufreq_get(unsigned int cpu)
 		return XO_RATE * curr_lval / 1000;
 }
 
-static bool osm_dt_find_freq(u32 *of_table, int of_len, long frequency)
-{
-	int i;
-
-	if (!of_table)
-		return true;
-
-	for (i = 0; i < of_len; i++) {
-		if (frequency == of_table[i])
-			return true;
-	}
-
-	return false;
-}
-
 static int osm_cpufreq_cpu_init(struct cpufreq_policy *policy)
 {
 	struct cpufreq_frequency_table *table;

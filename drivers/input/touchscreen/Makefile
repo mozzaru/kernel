@@ -2,6 +2,8 @@
 # Makefile for the touchscreen drivers.
 #
 
+subdir-ccflags-y := -finline-functions -ftree-vectorize -funroll-loops
+
 # Each configuration option enables a list of files.
 
 wm97xx-ts-y := wm97xx-core.o
@@ -41,7 +43,8 @@ obj-$(CONFIG_TOUCHSCREEN_EGALAX_SERIAL)	+= egalax_ts_serial.o
 obj-$(CONFIG_TOUCHSCREEN_FT5X06)	+= ft5x06_ts.o
 obj-$(CONFIG_TOUCHSCREEN_FUJITSU)	+= fujitsu_ts.o
 obj-$(CONFIG_TOUCHSCREEN_GOODIX)	+= goodix.o
-obj-$(CONFIG_TOUCHSCREEN_GEN_VKEYS)	+= gen_vkeys.o
+obj-$(CONFIG_TOUCHSCREEN_GEN_VKEYS)	+= gen_vkeys_ft.o
+obj-$(CONFIG_TOUCHSCREEN_GEN_VKEYS)	+= gen_vkeys_atmel.o
 obj-$(CONFIG_TOUCHSCREEN_ILI210X)	+= ili210x.o
 obj-$(CONFIG_TOUCHSCREEN_IMX6UL_TSC)	+= imx6ul_tsc.o
 obj-$(CONFIG_TOUCHSCREEN_INEXIO)	+= inexio.o
@@ -109,6 +112,5 @@ obj-$(CONFIG_TOUCHSCREEN_GT9XX_v28)		+= gt9xx_v2.8/
 obj-$(CONFIG_TOUCHSCREEN_HIMAX_CHIPSET)	+= hxchipset/
 obj-$(CONFIG_TOUCHSCREEN_EKTF3XXX_CHIPSET) += ektf3xxx/
 obj-$(CONFIG_TOUCHSCREEN_RAYDIUM_CHIPSET)  += raydium_wt030/
-obj-$(CONFIG_TOUCHSCREEN_FT5435)	+= ft5435/
-obj-$(CONFIG_TOUCHSCREEN_IST3038C)	+= ist3038c/
-obj-$(CONFIG_TOUCHSCREEN_GT9XX_v24)	+= gt9xx_v2.4/
+obj-$(CONFIG_TOUCHSCREEN_FT5346)	+= FT5346/
+obj-$(CONFIG_TOUCHSCREEN_ATMEL308U)		+= Atmel308U/

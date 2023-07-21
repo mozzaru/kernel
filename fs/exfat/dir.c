@@ -63,7 +63,6 @@ static int exfat_readdir(struct inode *inode, loff_t *cpos, struct exfat_dir_ent
 {
 	int i, dentries_per_clu, dentries_per_clu_bits = 0, num_ext;
 	unsigned int type, clu_offset, max_dir_clu;
-	sector_t sector;
 	struct exfat_chain dir, clu;
 	struct exfat_uni_name uni_name;
 	struct exfat_dentry *ep;

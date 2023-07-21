@@ -301,7 +301,7 @@ schedtune_accept_deltas(int nrg_delta, int cap_delta,
  *    implementation especially for the computation of the per-CPU boost
  *    value
  */
-#define BOOSTGROUPS_COUNT 8
+#define BOOSTGROUPS_COUNT 7
 
 /* Array of configured boostgroups */
 static struct schedtune *allocated_group[BOOSTGROUPS_COUNT] = {
@@ -1118,7 +1118,7 @@ sysctl_sched_cfs_boost_handler(struct ctl_table *table, int write,
 	if (ret || !write)
 		return ret;
 
-	if (sysctl_sched_cfs_boost < -100 || sysctl_sched_cfs_boost > 100)
+	if (sysctl_sched_cfs_boost > 100)
 		return -EINVAL;
 	boost_pct = sysctl_sched_cfs_boost;
 

@@ -273,7 +273,7 @@ int mdss_mdp_overlay_req_check(struct msm_fb_data_type *mfd,
 	    req->src_rect.w < min_src_size || req->src_rect.h < min_src_size ||
 	    CHECK_BOUNDS(req->src_rect.x, req->src_rect.w, req->src.width) ||
 	    CHECK_BOUNDS(req->src_rect.y, req->src_rect.h, req->src.height)) {
-		pr_err("invalid source image img wh=%dx%d rect=%d,%d,%d,%d\n",
+		pr_debug("invalid source image img wh=%dx%d rect=%d,%d,%d,%d\n",
 		       req->src.width, req->src.height,
 		       req->src_rect.x, req->src_rect.y,
 		       req->src_rect.w, req->src_rect.h);
@@ -6435,7 +6435,7 @@ static int __vsync_retire_setup(struct msm_fb_data_type *mfd)
 {
 	struct mdss_overlay_private *mdp5_data = mfd_to_mdp5_data(mfd);
 	char name[24];
-	struct sched_param param = { .sched_priority = 5 };
+	struct sched_param param = { .sched_priority = 9 };
 
 	snprintf(name, sizeof(name), "mdss_fb%d_retire", mfd->index);
 	mfd->mdp_sync_pt_data.timeline_retire = mdss_create_timeline(name);

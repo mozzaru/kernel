@@ -1101,12 +1101,14 @@ void rndis_free_response(struct rndis_params *params, u8 *buf)
 	rndis_resp_t *r, *n;
 	unsigned long flags;
 
+	spin_lock_irqsave(&params->lock, flags);
 	list_for_each_entry_safe(r, n, &params->resp_queue, list) {
 		if (r->buf == buf) {
 			list_del(&r->list);
 			kfree(r);
 		}
 	}
+	spin_unlock_irqrestore(&params->lock, flags);
 }
 EXPORT_SYMBOL_GPL(rndis_free_response);
 
@@ -1116,13 +1118,18 @@ u8 *rndis_get_next_response(struct rndis_params *params, u32 *length)
 	unsigned long flags;
 
 	if (!length) return NULL;
+
+	spin_lock_irqsave(&params->lock, flags);
 	list_for_each_entry_safe(r, n, &params->resp_queue, list) {
 		if (!r->send) {
 			r->send = 1;
 			*length = r->length;
+			spin_unlock_irqrestore(&params->lock, flags);
 			return r->buf;
-         }
-    }
+		}
+	}
+	spin_unlock_irqrestore(&params->lock, flags);
+
 	return NULL;
 }
 EXPORT_SYMBOL_GPL(rndis_get_next_response);
@@ -1140,7 +1147,9 @@ static rndis_resp_t *rndis_add_response(struct rndis_params *params, u32 length)
 	r->length = length;
 	r->send = 0;
 
+	spin_lock_irqsave(&params->lock, flags);
 	list_add_tail(&r->list, &params->resp_queue);
+	spin_unlock_irqrestore(&params->lock, flags);
 	return r;
 }
 

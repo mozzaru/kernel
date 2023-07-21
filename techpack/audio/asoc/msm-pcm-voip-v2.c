@@ -1,4 +1,4 @@
-/* Copyright (c) 2012-2017, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2012-2019, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -477,7 +477,7 @@ static void voip_process_ul_pkt(uint8_t *voc_pkt,
 					      &prtd->out_queue);
 			} else {
 				/* Drop the second frame */
-				pr_err("%s: UL data dropped, read is slow\n",
+				pr_debug("%s: UL data dropped, read is slow\n",
 				       __func__);
 			}
 			break;
@@ -503,7 +503,7 @@ static void voip_process_ul_pkt(uint8_t *voc_pkt,
 		snd_pcm_period_elapsed(prtd->capture_substream);
 	} else {
 		spin_unlock_irqrestore(&prtd->dsp_ul_lock, dsp_flags);
-		pr_err("UL data dropped\n");
+		pr_debug("UL data dropped\n");
 	}
 
 	wake_up(&prtd->out_wait);
@@ -670,7 +670,7 @@ static void voip_process_dl_pkt(uint8_t *voc_pkt, void *private_data)
 	} else {
 		*((uint32_t *)voc_pkt) = 0;
 		spin_unlock_irqrestore(&prtd->dsp_lock, dsp_flags);
-		pr_err_ratelimited("DL data not available\n");
+		pr_debug("DL data not available\n");
 	}
 	wake_up(&prtd->in_wait);
 }
@@ -921,7 +921,7 @@ static int msm_pcm_capture_copy(struct snd_pcm_substream *substream,
 
 
 	} else if (ret == 0) {
-		pr_err_ratelimited("%s: No UL data available\n", __func__);
+		pr_debug("%s: No UL data available\n", __func__);
 		ret = -ETIMEDOUT;
 	} else {
 		pr_err("%s: Read was interrupted\n", __func__);
@@ -1679,6 +1679,7 @@ static struct platform_driver msm_pcm_driver = {
 		.name = "msm-voip-dsp",
 		.owner = THIS_MODULE,
 		.of_match_table = msm_voip_dt_match,
+		.suppress_bind_attrs = true,
 	},
 	.probe = msm_pcm_probe,
 	.remove = msm_pcm_remove,

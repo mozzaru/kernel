@@ -274,7 +274,9 @@ static void sdio_release_func(struct device *dev)
 	 */
 	if (!func->card->host->embedded_sdio_data.funcs)
 #endif
-		sdio_free_func_cis(func);
+
+		if (!(func->card->quirks & MMC_QUIRK_NONSTD_SDIO))
+			sdio_free_func_cis(func);
 
 	kfree(func->info);
 	kfree(func->tmpbuf);
@@ -349,6 +351,8 @@ int sdio_add_func(struct sdio_func *func)
 		sdio_func_set_present(func);
 
 	return ret;
+
+	device_enable_async_suspend(&func->dev);
 }
 
 /*

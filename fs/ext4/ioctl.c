@@ -14,6 +14,7 @@
 #include <linux/mount.h>
 #include <linux/file.h>
 #include <linux/quotaops.h>
+#include <linux/random.h>
 #include <linux/uuid.h>
 #include <asm/uaccess.h>
 #include <linux/quotaops.h>

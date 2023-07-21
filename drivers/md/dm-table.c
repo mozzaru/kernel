@@ -1538,7 +1538,7 @@ static int queue_no_sg_merge(struct dm_target *ti, struct dm_dev *dev,
 {
 	struct request_queue *q = bdev_get_queue(dev->bdev);
 
-        return q && test_bit(QUEUE_FLAG_NO_SG_MERGE, &q->queue_flags);
+	return q && test_bit(QUEUE_FLAG_NO_SG_MERGE, &q->queue_flags);
 }
 
 static int queue_no_inline_encryption(struct dm_target *ti,

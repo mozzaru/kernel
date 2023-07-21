@@ -82,7 +82,7 @@ int fdt_setprop_inplace(void *fdt, int nodeoffset, const char *name,
 	int proplen;
 
 	propval = fdt_getprop(fdt, nodeoffset, name, &proplen);
-	if (!propval)
+	if (! propval)
 		return proplen;
 
 	if (proplen != len)

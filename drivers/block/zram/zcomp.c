@@ -23,7 +23,8 @@ static const char * const backends[] = {
 	"lzo-rle",
 #if IS_ENABLED(CONFIG_CRYPTO_LZ4)
 	"lz4",
-#else if IS_ENABLED(CONFIG_CRYPTO_ZSTD)
+#endif
+#if IS_ENABLED(CONFIG_CRYPTO_ZSTD)
 	"zstd",
 #endif
 	NULL
@@ -151,79 +152,57 @@ int zcomp_decompress(struct zcomp_strm *zstrm,
 			dst, &dst_len);
 }
 
-static int __zcomp_cpu_notifier(struct zcomp *comp,
-		unsigned long action, unsigned long cpu)
+int zcomp_cpu_up_prepare(unsigned int cpu, struct hlist_node *node)
 {
+	struct zcomp *comp = hlist_entry(node, struct zcomp, node);
 	struct zcomp_strm *zstrm;
 	int ret;
 
-	switch (action) {
-	case CPU_UP_PREPARE:
-		zstrm = per_cpu_ptr(comp->stream, cpu);
-		ret = zcomp_strm_init(zstrm, comp);
-		if (ret) {
-			pr_err("Can't allocate a compression stream\n");
-			return NOTIFY_BAD;
-		}
-		break;
-	case CPU_DEAD:
-	case CPU_UP_CANCELED:
-		zstrm = per_cpu_ptr(comp->stream, cpu);
-		zcomp_strm_free(zstrm);
-		break;
-	default:
-		break;
+	if (WARN_ON(*per_cpu_ptr(comp->stream, cpu)))
+		return 0;
+
+	zstrm = zcomp_strm_alloc(comp);
+	if (IS_ERR_OR_NULL(zstrm)) {
+		pr_err("Can't allocate a compression stream\n");
+		return -ENOMEM;
 	}
-	return NOTIFY_OK;
+	*per_cpu_ptr(comp->stream, cpu) = zstrm;
+	return 0;
 }
 
-static int zcomp_cpu_notifier(struct notifier_block *nb,
-		unsigned long action, void *pcpu)
+int zcomp_cpu_dead(unsigned int cpu, struct hlist_node *node)
 {
-	unsigned long cpu = (unsigned long)pcpu;
-	struct zcomp *comp = container_of(nb, typeof(*comp), notifier);
+	struct zcomp *comp = hlist_entry(node, struct zcomp, node);
+	struct zcomp_strm *zstrm;
 
-	return __zcomp_cpu_notifier(comp, action, cpu);
+	zstrm = *per_cpu_ptr(comp->stream, cpu);
+	if (!IS_ERR_OR_NULL(zstrm))
+		zcomp_strm_free(zstrm);
+	*per_cpu_ptr(comp->stream, cpu) = NULL;
+	return 0;
 }
 
 static int zcomp_init(struct zcomp *comp)
 {
-	unsigned long cpu;
 	int ret;
 
-	comp->notifier.notifier_call = zcomp_cpu_notifier;
-
-	comp->stream = alloc_percpu(struct zcomp_strm);
+	comp->stream = alloc_percpu(struct zcomp_strm *);
 	if (!comp->stream)
 		return -ENOMEM;
 
-	cpu_notifier_register_begin();
-	for_each_online_cpu(cpu) {
-		ret = __zcomp_cpu_notifier(comp, CPU_UP_PREPARE, cpu);
-		if (ret == NOTIFY_BAD)
-			goto cleanup;
-	}
-	__register_cpu_notifier(&comp->notifier);
-	cpu_notifier_register_done();
+	ret = cpuhp_state_add_instance(CPUHP_ZCOMP_PREPARE, &comp->node);
+	if (ret < 0)
+		goto cleanup;
 	return 0;
 
 cleanup:
-	for_each_online_cpu(cpu)
-		__zcomp_cpu_notifier(comp, CPU_UP_CANCELED, cpu);
-	cpu_notifier_register_done();
-	return -ENOMEM;
+	free_percpu(comp->stream);
+	return ret;
 }
 
 void zcomp_destroy(struct zcomp *comp)
 {
-	unsigned long cpu;
-
-	cpu_notifier_register_begin();
-	for_each_online_cpu(cpu)
-		__zcomp_cpu_notifier(comp, CPU_UP_CANCELED, cpu);
-	__unregister_cpu_notifier(&comp->notifier);
-	cpu_notifier_register_done();
-
+	cpuhp_state_remove_instance(CPUHP_ZCOMP_PREPARE, &comp->node);
 	free_percpu(comp->stream);
 	kfree(comp);
 }

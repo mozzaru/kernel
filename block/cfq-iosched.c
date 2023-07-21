@@ -662,7 +662,17 @@ static inline void cfqg_put(struct cfq_group *cfqg)
 	return blkg_put(cfqg_to_blkg(cfqg));
 }
 
-#define cfq_log_cfqq(cfqd, cfqq, fmt, args...)	do {} while (0)
+#define cfq_log_cfqq(cfqd, cfqq, fmt, args...)	do {			\
+	char __pbuf[128];						\
+	if (likely(!blk_trace_note_message_enabled((cfqd)->queue)))	\
+		break;							\
+									\
+	blkg_path(cfqg_to_blkg((cfqq)->cfqg), __pbuf, sizeof(__pbuf));	\
+	blk_add_trace_msg((cfqd)->queue, "cfq%d%c%c %s " fmt, (cfqq)->pid, \
+			cfq_cfqq_sync((cfqq)) ? 'S' : 'A',		\
+			cfqq_type((cfqq)) == SYNC_NOIDLE_WORKLOAD ? 'N' : ' ',\
+			  __pbuf, ##args);				\
+} while (0)
 
 #define cfq_log_cfqg(cfqd, cfqg, fmt, args...)	do {} while (0)
 
@@ -778,11 +788,14 @@ static inline bool cfqg_is_descendant(struct cfq_group *cfqg,
 static inline void cfqg_get(struct cfq_group *cfqg) { }
 static inline void cfqg_put(struct cfq_group *cfqg) { }
 
-#define cfq_log_cfqq(cfqd, cfqq, fmt, args...)	\
+#define cfq_log_cfqq(cfqd, cfqg, fmt, args...)	do {			\
+	if (likely(!blk_trace_note_message_enabled((cfqd)->queue)))	\
+		break;							\
 	blk_add_trace_msg((cfqd)->queue, "cfq%d%c%c " fmt, (cfqq)->pid,	\
 			cfq_cfqq_sync((cfqq)) ? 'S' : 'A',		\
 			cfqq_type((cfqq)) == SYNC_NOIDLE_WORKLOAD ? 'N' : ' ',\
-				##args)
+				##args);				\
+} while (0)
 #define cfq_log_cfqg(cfqd, cfqg, fmt, args...)		do {} while (0)
 
 static inline void cfqg_stats_update_io_add(struct cfq_group *cfqg,
@@ -4742,7 +4755,6 @@ static int cfq_init_queue(struct request_queue *q, struct elevator_type *e)
 	cfqd->cfq_target_latency = cfq_target_latency;
 	cfqd->cfq_slice_async_rq = cfq_slice_async_rq;
 	cfqd->cfq_slice_idle = cfq_slice_idle;
-	cfqd->cfq_max_async_dispatch = cfq_max_async_dispatch;
 	cfqd->cfq_group_idle = cfq_group_idle;
 	cfqd->cfq_rt_idle_only = cfq_rt_idle_only;
 	cfqd->cfq_latency = 1;

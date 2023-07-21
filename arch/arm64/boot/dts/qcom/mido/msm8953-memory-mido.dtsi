@@ -24,5 +24,21 @@
 			reg = <0x0 0x9ff00000 0x0 0x00100000>;
 			label = "pstore_reserve_mem";
 		};
+
+#include "msm8953-audio-mido.dtsi"
+#include "msm8953-general-mido.dtsi"
+#include "msm8953-display-mido.dtsi"
+#include "msm8953-camera-sensor-qrd-mido.dtsi"
+#include "msm8953-pinctrl-mido.dtsi"
+#include "msm8953-memory-mido.dtsi"
+#include "msm8953-OC-ram.dtsi"
+
+		venus_qseecom_mem: venus_qseecom_region@0 {
+			linux,reserve-contiguous-region;
+			linux,reserve-region;
+			linux,memory-limit = <0x90000000>;
+			reg = <0 0 0 0x1200000>;
+			label = "venus_qseecom_mem";
+		};
 	};
 };

@@ -154,5 +154,4 @@ ifneq ($(filter -mcpu=%, $(MACH_CFLAGS)),)
 ccflags-y += $(filter -mcpu=%, $(MACH_CFLAGS))+crypto
 endif
 endif
-# Squeeze a little bit more juice from GCC
-ccflags-y := -O3
+

@@ -4,13 +4,11 @@
 #include <linux/seq_file.h>
 #include <asm/setup.h>
 
-static char updated_command_line[COMMAND_LINE_SIZE];
+static char new_command_line[COMMAND_LINE_SIZE];
 
 static int cmdline_proc_show(struct seq_file *m, void *v)
 {
-	seq_printf(m, "%s\n", updated_command_line);
-	seq_puts(m, saved_command_line);
-	seq_putc(m, '\n');
+	seq_printf(m, "%s\n", new_command_line);
 	return 0;
 }
 
@@ -26,30 +24,39 @@ static const struct file_operations cmdline_proc_fops = {
 	.release	= single_release,
 };
 
-static void proc_cmdline_set(char *name, char *value)
+static void patch_flag(char *cmd, const char *flag, const char *val)
 {
-	char flag_str[COMMAND_LINE_SIZE];
-	char *flag_substr;
-	char *flag_space_substr;
- 	scnprintf(flag_str, COMMAND_LINE_SIZE, "%s=", name);
-	flag_substr = strstr(updated_command_line, flag_str);
- 	if (flag_substr) {
-		flag_space_substr = strchr(flag_substr, ' ');
-		scnprintf(updated_command_line, COMMAND_LINE_SIZE, "%.*s%s", (int)(flag_substr - updated_command_line), updated_command_line, flag_space_substr + 1);
-	}
-	if (value != NULL) {
-		// flag was not found, insert it
-		scnprintf(updated_command_line, COMMAND_LINE_SIZE, "%s %s=%s", updated_command_line, name, value);
-	}
+	size_t flag_len, val_len;
+	char *start, *end;
+
+	start = strstr(cmd, flag);
+	if (!start)
+		return;
+
+	flag_len = strlen(flag);
+	val_len = strlen(val);
+	end = start + flag_len + strcspn(start + flag_len, " ");
+	memmove(start + flag_len + val_len, end, strlen(end) + 1);
+	memcpy(start + flag_len, val, val_len);
+}
+
+static void patch_safetynet_flags(char *cmd)
+{
+	patch_flag(cmd, "androidboot.flash.locked=", "1");
+	patch_flag(cmd, "androidboot.verifiedbootstate=", "green");
+	patch_flag(cmd, "androidboot.veritymode=", "enforcing");
+	patch_flag(cmd, "androidboot.vbmeta.device_state=", "locked");
 }
 
 static int __init proc_cmdline_init(void)
 {
-	// copy it only once
-	strcpy(updated_command_line, saved_command_line);
- 	proc_cmdline_set("androidboot.verifiedbootstate", "green");
-	proc_cmdline_set("androidboot.veritymode", "enforcing");
-	proc_cmdline_set("lpm_levels.sleep_disabled", NULL);
+	strcpy(new_command_line, saved_command_line);
+
+	/*
+	 * Patch various flags from command line seen by userspace in order to
+	 * pass SafetyNet checks.
+	 */
+	patch_safetynet_flags(new_command_line);
 
 	proc_create("cmdline", 0, NULL, &cmdline_proc_fops);
 	return 0;

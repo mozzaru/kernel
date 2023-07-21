@@ -279,7 +279,6 @@ int sched_clock_suspend(void)
 	struct clock_read_data *rd = &cd.read_data[0];
 
 	update_sched_clock();
-
 	hrtimer_cancel(&sched_clock_timer);
 	rd->read_sched_clock = suspended_sched_clock_read;
 

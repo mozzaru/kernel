@@ -136,21 +136,13 @@ static struct page *alloc_buffer_page(struct ion_system_heap *heap,
 			gfp_mask = high_order_gfp_flags;
 
 		page = alloc_pages(gfp_mask, order);
-		if (page)
+		if (cached)
 			ion_pages_sync_for_device(dev, page, PAGE_SIZE << order,
 						  DMA_BIDIRECTIONAL);
 	}
 	if (!page)
 		return 0;
 
-	if (!cached)
-		pool = heap->uncached_pools[order_to_index(order)];
-	else
-		pool = heap->cached_pools[order_to_index(order)];
-
-	if (page && cached)
-		ion_pages_sync_for_device(NULL, page, PAGE_SIZE << order,
-					  DMA_BIDIRECTIONAL);
 	return page;
 }
 

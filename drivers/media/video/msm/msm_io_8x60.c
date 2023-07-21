@@ -1092,3 +1092,4 @@ int msm_cam_core_reset(void)
 
 	return rc;
 }
+
