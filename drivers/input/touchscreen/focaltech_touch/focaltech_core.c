@@ -1115,6 +1115,10 @@ static void fts_ts_late_resume(struct early_suspend *handler)
 }
 #endif
 
+#ifdef CONFIG_MACH_XIAOMI
+extern bool xiaomi_ts_probed;
+#endif
+
 /*****************************************************************************
  *  Name: fts_ts_probe
  *  Brief:
@@ -1129,6 +1133,11 @@ static int fts_ts_probe(struct i2c_client *client,
 	struct fts_ts_data *data;
 	struct input_dev *input_dev;
 	int err;
+
+#ifdef CONFIG_MACH_XIAOMI
+	if (xiaomi_ts_probed)
+		return -ENODEV;
+#endif
 
 	FTS_FUNC_ENTER();
 	/* 1. Get Platform data */
@@ -1287,6 +1296,10 @@ static int fts_ts_probe(struct i2c_client *client,
 	register_early_suspend(&data->early_suspend);
 #endif
 
+#ifdef CONFIG_MACH_XIAOMI
+	xiaomi_ts_probed = true;
+#endif
+
 	FTS_FUNC_EXIT();
 	return 0;
 
@@ -1376,6 +1389,10 @@ static int fts_ts_remove(struct i2c_client *client)
 
 #if FTS_ESDCHECK_EN
 	fts_esdcheck_exit();
+#endif
+
+#ifdef CONFIG_MACH_XIAOMI
+	xiaomi_ts_probed = false;
 #endif
 
 	FTS_FUNC_EXIT();
