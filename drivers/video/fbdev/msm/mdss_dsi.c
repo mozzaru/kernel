@@ -139,7 +139,7 @@ void mdss_dump_dsi_debug_bus(u32 bus_dump_flag,
 	pr_info("========End DSI Debug Bus=========\n");
 }
 
-#ifdef CONFIG_MACH_XIAOMI_C6
+#if defined(CONFIG_MACH_XIAOMI_C6) || defined(CONFIG_MACH_XIAOMI_MARKW)
 int panel_suspend_reset_flag = 0;
 #endif
 static void mdss_dsi_pm_qos_add_request(struct mdss_dsi_ctrl_pdata *ctrl_pdata)
@@ -398,7 +398,7 @@ static int mdss_dsi_panel_power_off(struct mdss_panel_data *pdata)
 	if (mdss_dsi_pinctrl_set_state(ctrl_pdata, false))
 		pr_debug("reset disable: pinctrl not enabled\n");
 
-#ifdef CONFIG_MACH_XIAOMI_C6
+#if defined(CONFIG_MACH_XIAOMI_C6) || defined(CONFIG_MACH_XIAOMI_MARKW)
 	if (panel_suspend_reset_flag == 2)
 		msleep(1); /* delay 1ms */
 	else if (panel_suspend_reset_flag == 3)
@@ -4220,7 +4220,7 @@ static int mdss_dsi_parse_ctrl_params(struct platform_device *ctrl_pdev,
 
 }
 
-#ifdef CONFIG_MACH_XIAOMI_C6
+#if defined(CONFIG_MACH_XIAOMI_C6) || defined(CONFIG_MACH_XIAOMI_MARKW)
 u32 te_count;
 static irqreturn_t te_interrupt(int irq, void *data)
 {
@@ -4266,7 +4266,7 @@ int init_te_irq(struct mdss_dsi_ctrl_pdata *ctrl_pdata)
 
 	return 0;
 }
-#endif /* MACH_XIAOMI_C6 */
+#endif /* MACH_XIAOMI_C6 */ /* MACH_XIAOMI_MARKW */
 
 static int mdss_dsi_parse_gpio_params(struct platform_device *ctrl_pdev,
 	struct mdss_dsi_ctrl_pdata *ctrl_pdata)
