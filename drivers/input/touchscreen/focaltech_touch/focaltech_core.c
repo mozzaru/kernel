@@ -1330,8 +1330,6 @@ static int fts_ts_probe(struct i2c_client *client,
 	FTS_FUNC_EXIT();
 	return 0;
 
-free_irq:
-	free_irq(client->irq, data);
 free_input:
 	input_unregister_device(data->input_dev);
 	i2c_set_clientdata(client, NULL);
