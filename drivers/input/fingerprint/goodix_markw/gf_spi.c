@@ -766,10 +766,10 @@ static int gf_remove(struct platform_device *pdev)
 	if (gf_dev->irq)
 		free_irq(gf_dev->irq, gf_dev);
 
-	if (gf_dev->input != NULL)
-		input_unregister_device(gf_dev->input);
-		input_free_device(gf_dev->input);
-
+	if (gf_dev->input != NULL) {
+                input_unregister_device(gf_dev->input);
+                input_free_device(gf_dev->input);
+        }
 
 	mutex_lock(&device_list_lock);
 	list_del(&gf_dev->device_entry);
