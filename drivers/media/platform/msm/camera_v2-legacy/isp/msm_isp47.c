@@ -150,10 +150,8 @@ static struct msm_bus_paths msm_isp_bus_client_config[] = {
 
 static struct msm_bus_scale_pdata msm_isp_bus_client_pdata = {
 	msm_isp_bus_client_config,
-	NULL,
 	ARRAY_SIZE(msm_isp_bus_client_config),
 	.name = "msm_camera_isp",
-	0
 };
 
 uint32_t msm_vfe47_ub_reg_offset(struct vfe_device *vfe_dev, int wm_idx)
@@ -555,7 +553,6 @@ void msm_vfe47_process_error_status(struct vfe_device *vfe_dev)
 void msm_vfe47_read_irq_status_and_clear(struct vfe_device *vfe_dev,
 	uint32_t *irq_status0, uint32_t *irq_status1)
 {
-	uint32_t count = 0;
 	*irq_status0 = msm_camera_io_r(vfe_dev->vfe_base + 0x6C);
 	*irq_status1 = msm_camera_io_r(vfe_dev->vfe_base + 0x70);
 	/* Mask off bits that are not enabled */
@@ -564,15 +561,6 @@ void msm_vfe47_read_irq_status_and_clear(struct vfe_device *vfe_dev,
 	msm_camera_io_w_mb(1, vfe_dev->vfe_base + 0x58);
 	*irq_status0 &= vfe_dev->irq0_mask;
 	*irq_status1 &= vfe_dev->irq1_mask;
-
-	/* check if status register is cleared if not clear again*/
-	while (*irq_status0 &&
-		(*irq_status0 & msm_camera_io_r(vfe_dev->vfe_base + 0x6C)) &&
-		(count < MAX_RECOVERY_THRESHOLD)) {
-		msm_camera_io_w(*irq_status0, vfe_dev->vfe_base + 0x64);
-		msm_camera_io_w_mb(1, vfe_dev->vfe_base + 0x58);
-		count++;
-	}
 
 	if (*irq_status1 & (1 << 0)) {
 		vfe_dev->error_info.camif_status =
@@ -1726,18 +1714,10 @@ void msm_vfe47_cfg_axi_ub_equal_default(
 	uint32_t wm_ub_size;
 	uint32_t min_ub;
 	uint64_t delta;
-	uint32_t vfe_ub_size = 0;
 
 	for (i = 0; i < axi_data->hw_info->num_wm; i++) {
 		if (axi_data->free_wm[i]) {
-		/* separate wm for each interface as min_ub is different for
-		 * both pix and rdi
-		 */
-			if (VFE_PIX_0 == SRC_TO_INTF(
-					HANDLE_TO_IDX(axi_data->free_wm[i])))
-				pix_num_used_wms++;
-			else
-				rdi_num_used_wms++;
+			num_used_wms++;
 			total_image_size +=
 				axi_data->wm_image_size[i];
 		}
@@ -1746,15 +1726,9 @@ void msm_vfe47_cfg_axi_ub_equal_default(
 		pr_err("%s: Error total_image_size is 0\n", __func__);
 		return;
 	}
-	/* get ub for each vfe */
-	vfe_ub_size = vfe_dev->hw_info->vfe_ops.axi_ops.get_ub_size(vfe_dev);
-	/* calculate min_ub needed for both pix and rdi wm
-	 * for pix min_ub 96 and rdi 192 as per hw
-	 */
-	min_ub = (axi_data->hw_info->min_wm_ub * pix_num_used_wms) +
-			(axi_data->hw_info->min_wm_ub * 2 * rdi_num_used_wms);
-	/* calculate propotional ub for all wm */
-	prop_size = vfe_ub_size - min_ub;
+	prop_size = vfe_dev->hw_info->vfe_ops.axi_ops.
+		get_ub_size(vfe_dev) -
+		axi_data->hw_info->min_wm_ub * num_used_wms;
 	for (i = 0; i < axi_data->hw_info->num_wm; i++) {
 		if (!axi_data->free_wm[i]) {
 			msm_camera_io_w(0,
@@ -1765,22 +1739,15 @@ void msm_vfe47_cfg_axi_ub_equal_default(
 		if (!axi_data->free_wm[i])
 			continue;
 
-		/* calcualte delta by considering
-		 * wm_image_size + total imagesize
-		 */
 		delta = (uint64_t)axi_data->wm_image_size[i] *
 			(uint64_t)prop_size;
 			do_div(delta, total_image_size);
-		/* to meet hw constraint add min_ub of 192
-		 * for RDI and 96 for pix
-		 */
-		if (VFE_PIX_0 != SRC_TO_INTF(
-			HANDLE_TO_IDX(axi_data->free_wm[i])))
-			wm_ub_size = (axi_data->hw_info->min_wm_ub * 2) +
-					(uint32_t)delta;
-		else
-			wm_ub_size = axi_data->hw_info->min_wm_ub +
-					(uint32_t)delta;
+		if (frame_src != VFE_PIX_0) {
+			if (delta <= axi_data->hw_info->min_wm_ub)
+				delta = axi_data->hw_info->min_wm_ub;
+		}
+		wm_ub_size = axi_data->hw_info->min_wm_ub +
+			(uint32_t)delta;
 		msm_camera_io_w(ub_offset << 16 | (wm_ub_size - 1),
 			vfe_dev->vfe_base +
 			vfe_dev->hw_info->vfe_ops.axi_ops.
