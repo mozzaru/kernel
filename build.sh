@@ -52,20 +52,20 @@ if [[ ! -d "$MY_DIR" ]]; then MY_DIR="$PWD"; fi
 #
 # TOOLCHAIN = the toolchain u want to use "gcc/clang"
 
-CHATID="5801557250"
-API_BOT="6130238052:AAFDEWKYtsPPEt2xGHUHigpy6J4goGzqwC0"
+CHATID="7047525313"
+API_BOT="7883309393:AAH8dj7eCYIV8JUn1JlLUQ3hvozHVlU1hAI"
 
 
 DEVICE="Redmi 4 Prime"
 CODENAME="markw"
-KERNEL_NAME="Prototype"
+KERNEL_NAME="Prototype-v2-normal"
 
 DEFCONFIG="markw_defconfig"
 
-AnyKernel="https://github.com/mozzaru/anykernel.git"
+AnyKernel="https://github.com/mozzaru/anykernel"
 AnyKernelbranch="master"
 
-HOSST="mozzaru Buildbot"
+HOSST="Show Buildbot"
 USEER="mozzaru"
 
 TOOLCHAIN="clang"
@@ -196,6 +196,12 @@ KERVER=$(make kernelversion)
                 rm -rf error.log
                 exit 1
         fi
+ # KernelSU
+# Check if AK3 is KSU version to build KernelSU
+        if [[ "$ANYK_VERSION" == *"KSU"* ]]; then
+    sed -i 's/# CONFIG_KSU is not set/CONFIG_KSU=y/' arch/arm64/configs/markw_defconfig
+    echo -e "$cyan KernelSU option selected and enabled to be built! $white"
+        fi
 
         if [ -f "$IMG" ]; then
                 echo -e "$green << cloning AnyKernel from your repo >> \n $white"
@@ -206,9 +212,9 @@ KERVER=$(make kernelversion)
                 mv Image.gz-dtb zImage
                 export ZIP="$KERNEL_NAME"-"$CODENAME"-"$DATE"
                 zip -r "$ZIP" *
-                curl -sLo zipsigner-3.0.jar https://raw.githubusercontent.com/mozzaru/AnyKernel/master/zipsigner-3.0.jar
+                curl -sLo zipsigner-3.0.jar https://raw.githubusercontent.com/Hunter-commits/AnyKernel/master/zipsigner-3.0.jar
                 java -jar zipsigner-3.0.jar "$ZIP".zip "$ZIP"-signed.zip
-                tg_post_msg "<b>=============================</b> %0A <b>× Prototype For Redmi 4 Prime ×</b> %0A <b>=============================</b> %0A%0A <b>Date : </b> <code>$(TZ=Indonesia/Jakarta date)</code> %0A%0A <b>Device Code Name:</b> <code>$CODENAME</code> %0A%0A <b>Kernel Version :</b> <code>$KERVER</code> %0A%0A <b>Changelog:</b> %0A https://github.com/mozzaru/kernel_xiaomi_markw_new/commits/Tt <b>Developer:</b> @mozzaru %0A%0A  #prototype #markw" "$CHATID"
+                tg_post_msg "<b>=============================</b> %0A <b>× Prototype For Redmi 4 Prime ×</b> %0A <b>=============================</b> %0A%0A <b>Date : </b> <code>$(TZ=Indonesia/Jakarta date)</code> %0A%0A <b>Device Code Name:</b> <code>$CODENAME</code> %0A%0A <b>Kernel Version :</b> <code>$KERVER</code> %0A%0A <b>Developer:</b> @mozzaru86 %0A%0A <b>Channel:</b> t.me/Cooking_kernel_bot %0A%0A <b>Changelog:</b> %0A https://github.com/mozzaru/kernel_markw/commits/13t #prototype #markw" "$CHATID"
                 tg_post_build "$ZIP"-signed.zip "$CHATID"
                 cd ..
                 rm -rf error.log
