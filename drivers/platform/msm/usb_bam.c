@@ -30,7 +30,7 @@
 
 #define USB_THRESHOLD 512
 #define USB_BAM_MAX_STR_LEN 50
-#define USB_BAM_TIMEOUT (10*HZ)
+#define USB_BAM_TIMEOUT (msecs_to_jiffies(10000))
 #define DBG_MAX_MSG   512UL
 #define DBG_MSG_LEN   160UL
 #define TIME_BUF_LEN  17
@@ -44,7 +44,7 @@
 #define ARRAY_INDEX_FROM_ADDR(base, addr) ((addr) - (base))
 
 #define ENABLE_EVENT_LOG 1
-static unsigned int enable_event_log = ENABLE_EVENT_LOG;
+static unsigned int enable_event_log = 0;
 module_param(enable_event_log, uint, 0644);
 MODULE_PARM_DESC(enable_event_log, "enable event logging in debug buffer");
 

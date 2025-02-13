@@ -42,19 +42,9 @@
 #define MAX_RA_WAKE_LOCK_NAME_LEN 32
 #define SMD_TTY_LOG_PAGES 2
 
-#define SMD_TTY_INFO(buf...) \
-do { \
-	if (smd_tty_log_ctx) { \
-		ipc_log_string(smd_tty_log_ctx, buf); \
-	} \
-} while (0)
+#define SMD_TTY_INFO(buf...) ((void)0)
 
-#define SMD_TTY_ERR(buf...) \
-do { \
-	if (smd_tty_log_ctx) \
-		ipc_log_string(smd_tty_log_ctx, buf); \
-	pr_err(buf); \
-} while (0)
+#define SMD_TTY_ERR(buf...) ((void)0)
 
 static void *smd_tty_log_ctx;
 static bool smd_tty_in_suspend;
@@ -593,7 +583,7 @@ static int smd_tty_port_activate(struct tty_port *tport,
 	}
 
 	res = wait_event_interruptible_timeout(info->ch_opened_wait_queue,
-					       info->is_open, (2 * HZ));
+					       info->is_open, (msecs_to_jiffies(2000)));
 	if (res == 0)
 		res = -ETIMEDOUT;
 	if (res < 0) {

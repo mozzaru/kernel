@@ -1357,7 +1357,7 @@ hdd_extract_assigned_int_from_str
 
     while ((SPACE_ASCII_VALUE  == *pInPtr) && ('\0' !=  *pInPtr)) pInPtr++;
 
-    val = sscanf(pInPtr, "%32s ", buf);
+    val = sscanf(pInPtr, "%31s ", buf);
     if (val < 0 && val > strlen(pInPtr))
     {
         return NULL;
@@ -8945,7 +8945,7 @@ done:
    return ret;
 }
 
-static int hdd_open_cesium_nl_sock()
+static int hdd_open_cesium_nl_sock(void)
 {
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0))
    struct netlink_kernel_cfg cfg = {
@@ -8976,7 +8976,7 @@ static int hdd_open_cesium_nl_sock()
    return ret;
 }
 
-static void hdd_close_cesium_nl_sock()
+static void hdd_close_cesium_nl_sock(void)
 {
    if (NULL != cesium_nl_srv_sock)
    {
